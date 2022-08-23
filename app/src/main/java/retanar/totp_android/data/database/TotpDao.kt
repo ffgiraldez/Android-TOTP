@@ -9,6 +9,9 @@ interface TotpDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(totp: TotpDbEntity)
 
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun update(totp: TotpDbEntity)
+
     @Delete
     suspend fun delete(totp: TotpDbEntity)
 

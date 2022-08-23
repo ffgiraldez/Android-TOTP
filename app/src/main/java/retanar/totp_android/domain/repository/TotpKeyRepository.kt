@@ -9,6 +9,6 @@ interface TotpKeyRepository {
 
     suspend fun removeKey(key: TotpKey)
 
-//    Todo: editing a key and how
-//    suspend fun editKey()
+    /** Edit a key by its id */
+    suspend fun editKey(key: TotpKey)
 }

@@ -1,4 +1,4 @@
-package retanar.totp_android.ui.theme
+package retanar.totp_android.presentation.theme.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes

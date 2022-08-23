@@ -1,4 +1,4 @@
-package retanar.totp_android.ui.theme
+package retanar.totp_android.presentation.theme.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
