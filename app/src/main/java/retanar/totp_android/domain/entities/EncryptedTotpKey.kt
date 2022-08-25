@@ -1,12 +1,7 @@
-package retanar.totp_android.data.database
+package retanar.totp_android.domain.entities
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-/** Set `id` to 0 to autogenerate id by the database */
-@Entity(tableName = totpTableName)
-data class TotpDbEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+data class EncryptedTotpKey(
+    val id: Int,
     val name: String,
     val secret: ByteArray,
     val iv: ByteArray,
@@ -15,7 +10,7 @@ data class TotpDbEntity(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as TotpDbEntity
+        other as EncryptedTotpKey
 
         if (id != other.id) return false
         if (name != other.name) return false

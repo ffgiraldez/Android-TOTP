@@ -1,4 +1,4 @@
-package retanar.totp_android.domain
+package retanar.totp_android.domain.crypto
 
 import kotlin.time.Duration
 

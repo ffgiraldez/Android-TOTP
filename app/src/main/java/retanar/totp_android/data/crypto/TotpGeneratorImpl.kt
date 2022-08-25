@@ -1,6 +1,6 @@
-package retanar.totp_android.data
+package retanar.totp_android.data.crypto
 
-import retanar.totp_android.domain.TotpGenerator
+import retanar.totp_android.domain.crypto.TotpGenerator
 import kotlin.time.Duration
 
 class TotpGeneratorImpl : TotpGenerator {
