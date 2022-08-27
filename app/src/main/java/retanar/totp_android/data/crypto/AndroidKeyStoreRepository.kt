@@ -19,6 +19,7 @@ class AndroidKeyStoreRepository : SecretKeyRepository {
                 KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setKeySize(256)
                 .setRandomizedEncryptionRequired(true)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .build()
