@@ -3,6 +3,7 @@ package retanar.totp_android.presentation
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.apache.commons.codec.binary.Base32
 import retanar.totp_android.domain.crypto.SecretEncryptor
@@ -26,7 +27,16 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
+            autoUpdate()
+        }
+    }
+
+    private suspend fun autoUpdate(timeStepMs: Long = 30_000) {
+        while (true) {
             updateStateList()
+            val timeCurrent = Date().time % timeStepMs
+            // Sleep right until the next step
+            delay(timeStepMs - timeCurrent)
         }
     }
 
