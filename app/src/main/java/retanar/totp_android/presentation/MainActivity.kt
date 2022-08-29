@@ -5,16 +5,19 @@ package retanar.totp_android.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retanar.totp_android.presentation.theme.theme.TOTPTheme
 
@@ -44,12 +47,18 @@ fun HomeScreen(
     )
 ) {
     val state = viewModel.homeState
-    Scaffold {
-        TotpCardListView(/*state.value.totpList*/ listOf(
-            TotpCardState(1, "name 1", 111111),
-            TotpCardState(2, "name 2", 222222),
-            TotpCardState(3, "name 3", 333333),
-        ))
+    var showDialog by remember { mutableStateOf(false) }
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showDialog = true }) {
+                Icon(Icons.Filled.Add, "Add TOTP", tint = Color.White)
+            }
+        },
+    ) {
+        TotpCardListView(state.value.totpList)
+
+        AddTotpDialog(showDialog, { showDialog = false }, viewModel::addTotp)
     }
 }
 
@@ -60,27 +69,65 @@ fun TotpCardListView(list: List<TotpCardState>) {
             TotpCard(item)
         }
     }
-
 }
 
 @Composable
 fun TotpCard(totpCardState: TotpCardState) {
-    Card(Modifier.padding(8.dp)) {
-        Column {
+    Card(Modifier.padding(8.dp).fillMaxWidth(), elevation = 2.dp) {
+        Column(Modifier.padding(8.dp)) {
             Text(text = totpCardState.name)
-            Text(fontSize = 28.sp, text = totpCardState.oneTimeCode.toString())
+            Text(fontSize = 28.sp, text = totpCardState.oneTimeCode.toString().padStart(6, '0'))
         }
     }
 }
 
-@Preview
 @Composable
-fun ListPreview() {
-    TOTPTheme {
-        TotpCardListView(listOf(
-            TotpCardState(1, "name 1", 111111),
-            TotpCardState(2, "name 2", 222222),
-            TotpCardState(3, "name 3", 333333),
-        ))
+fun AddTotpDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onAdd: (name: String, secret: String) -> Unit,
+) {
+    if (!showDialog) return
+
+    var name by remember { mutableStateOf("") }
+    var secret by remember { mutableStateOf("") }
+
+    Dialog(onDismiss) {
+        Card {
+            Column {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                    modifier = Modifier.padding(all = 8.dp).fillMaxWidth(),
+                    textStyle = TextStyle(fontSize = 22.sp),
+                    colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
+                )
+                TextField(
+                    value = secret,
+                    onValueChange = { secret = it },
+                    label = { Text("Secret") },
+                    singleLine = true,
+                    modifier = Modifier.padding(all = 8.dp).fillMaxWidth(),
+                    textStyle = TextStyle(fontSize = 22.sp),
+                    colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
+                )
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("CANCEL")
+                    }
+                    TextButton(onClick = {
+                        onAdd(name, secret)
+                        onDismiss()
+                    }) {
+                        Text("ADD")
+                    }
+                }
+            }
+        }
     }
 }
