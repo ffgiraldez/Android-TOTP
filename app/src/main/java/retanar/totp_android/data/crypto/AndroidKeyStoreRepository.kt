@@ -20,7 +20,8 @@ class AndroidKeyStoreRepository : SecretKeyRepository {
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setKeySize(256)
-                .setRandomizedEncryptionRequired(true)
+                // false to use custom IV
+                .setRandomizedEncryptionRequired(false)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .build()
         )

@@ -10,8 +10,7 @@ class GenerateTotpCodeUseCase(
     private val encryptor: SecretEncryptor,
     private val getUnixTime: () -> Duration,
 ) {
-    // suspend keyword in case encryptor or generator is slow
-    suspend fun execute(totpKey: EncryptedTotpKey): Int {
+    fun execute(totpKey: EncryptedTotpKey): Int {
         val secret = encryptor.decrypt(totpKey.secret, totpKey.iv)
         return generator.generate(secret, getUnixTime())
     }
