@@ -1,4 +1,4 @@
-package retanar.totp_android.presentation.theme.theme
+package retanar.totp_android.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

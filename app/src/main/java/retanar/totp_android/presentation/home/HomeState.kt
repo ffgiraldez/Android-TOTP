@@ -1,4 +1,4 @@
-package retanar.totp_android.presentation
+package retanar.totp_android.presentation.home
 
 data class HomeState(
     val totpList: List<TotpCardState> = emptyList(),

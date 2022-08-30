@@ -1,4 +1,4 @@
-package retanar.totp_android.presentation
+package retanar.totp_android.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
