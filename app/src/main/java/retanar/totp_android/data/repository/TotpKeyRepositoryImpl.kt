@@ -1,5 +1,7 @@
 package retanar.totp_android.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import retanar.totp_android.data.database.TotpDao
 import retanar.totp_android.data.database.TotpDbMapper
 import retanar.totp_android.domain.entities.EncryptedTotpKey
@@ -9,8 +11,8 @@ class TotpKeyRepositoryImpl(
     private val dao: TotpDao,
 ) : TotpKeyRepository {
 
-    override suspend fun getAllKeys(): List<EncryptedTotpKey> {
-        return dao.queryAll().map(TotpDbMapper::toTotpKey)
+    override fun getAllKeys(): Flow<List<EncryptedTotpKey>> {
+        return dao.queryAll().map { it.map(TotpDbMapper::toTotpKey) }
     }
 
     override suspend fun addKey(key: EncryptedTotpKey) {

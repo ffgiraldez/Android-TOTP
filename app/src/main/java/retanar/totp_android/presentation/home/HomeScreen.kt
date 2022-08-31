@@ -31,7 +31,7 @@ fun HomeScreen(
         )
     )
 ) {
-    val state = viewModel.homeState
+    val state by viewModel.homeState
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -44,23 +44,23 @@ fun HomeScreen(
             }
         },
     ) {
-        TotpCardListView(state.value.totpList)
+        TotpCardListView(state.totpList, onRemove = { id -> viewModel.removeTotpById(id) })
 
         AddTotpDialog(showDialog, { showDialog = false }, viewModel::addTotp)
     }
 }
 
 @Composable
-fun TotpCardListView(list: List<TotpCardState>) {
+fun TotpCardListView(list: List<TotpCardState>, onRemove: (id: Int) -> Unit) {
     LazyColumn {
         items(items = list) { item ->
-            TotpCard(item)
+            TotpCard(item, onRemove)
         }
     }
 }
 
 @Composable
-fun TotpCard(totpCardState: TotpCardState) {
+fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit) {
     Card(Modifier.padding(8.dp).fillMaxWidth(), elevation = 2.dp) {
         Column(Modifier.padding(8.dp)) {
             Text(text = totpCardState.name)

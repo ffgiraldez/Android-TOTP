@@ -1,9 +1,10 @@
 package retanar.totp_android.domain.repository
 
+import kotlinx.coroutines.flow.Flow
 import retanar.totp_android.domain.entities.EncryptedTotpKey
 
 interface TotpKeyRepository {
-    suspend fun getAllKeys(): List<EncryptedTotpKey>
+    fun getAllKeys(): Flow<List<EncryptedTotpKey>>
 
     suspend fun addKey(key: EncryptedTotpKey)
 

@@ -1,6 +1,7 @@
 package retanar.totp_android.data.database
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 const val totpTableName = "totp"
 
@@ -16,5 +17,5 @@ interface TotpDao {
     suspend fun delete(totp: TotpDbEntity)
 
     @Query("SELECT * FROM $totpTableName")
-    suspend fun queryAll(): List<TotpDbEntity>
+    fun queryAll(): Flow<List<TotpDbEntity>>
 }
