@@ -2,6 +2,8 @@
 
 package retanar.totp_android.presentation.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +22,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retanar.totp_android.R
 import retanar.totp_android.presentation.DependencyContainer
+import retanar.totp_android.presentation.composables.PopupMenuDialog
+import retanar.totp_android.presentation.composables.PopupMenuTextItem
 
 @Composable
 fun HomeScreen(
@@ -59,13 +63,29 @@ fun TotpCardListView(list: List<TotpCardState>, onRemove: (id: Int) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit) {
-    Card(Modifier.padding(8.dp).fillMaxWidth(), elevation = 2.dp) {
+    var showPopupMenu by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .combinedClickable(onClick = {}, onLongClick = {
+                showPopupMenu = true
+            }),
+        elevation = 2.dp,
+    ) {
         Column(Modifier.padding(8.dp)) {
             Text(text = totpCardState.name)
             Text(fontSize = 28.sp, text = totpCardState.oneTimeCode.toString().padStart(6, '0'))
         }
+    }
+    if (showPopupMenu) {
+        PopupMenuDialog(
+            { showPopupMenu = false },
+            PopupMenuTextItem("Remove") { onRemove(totpCardState.id) },
+        )
     }
 }
 
