@@ -56,14 +56,14 @@ class HomeViewModel(
     }
 
     private fun updateStateList(keyList: List<EncryptedTotpKey>) {
-        val list = keyList.map { TotpCardState(it.id, it.name, generateTotpCodeUseCase.execute(it)) }.toList()
+        val list = keyList.map { TotpCardState(it.id, it.name, generateTotpCodeUseCase(it)) }.toList()
         homeState.value = homeState.value.copy(totpList = list)
     }
 
     fun addTotp(name: String, base32Secret: String) {
         val secret = Base32().decode(base32Secret)
         viewModelScope.launch {
-            addTotpUseCase.execute(secret, name)
+            addTotpUseCase(secret, name)
         }
     }
 

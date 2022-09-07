@@ -10,7 +10,7 @@ class GenerateTotpCodeUseCase(
     private val encryptor: SecretEncryptor,
     private val getUnixTime: () -> Duration,
 ) {
-    fun execute(totpKey: EncryptedTotpKey): Int {
+    operator fun invoke(totpKey: EncryptedTotpKey): Int {
         val secret = encryptor.decrypt(totpKey.secret, totpKey.iv)
         return generator.generate(secret, getUnixTime())
     }
