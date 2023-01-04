@@ -11,9 +11,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,6 +26,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retanar.totp_android.R
 import retanar.totp_android.presentation.DependencyContainer
+import retanar.totp_android.presentation.composables.LaunchedSnackbar
 import retanar.totp_android.presentation.composables.PopupMenuDialog
 import retanar.totp_android.presentation.composables.PopupMenuTextItem
 
@@ -37,8 +42,12 @@ fun HomeScreen(
 ) {
     val state by viewModel.homeState
     var showDialog by remember { mutableStateOf(false) }
+    var showSnackbar by remember { mutableStateOf(false) }
+    val scaffoldState = rememberScaffoldState()
+    val clipboard = LocalClipboardManager.current
 
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) })
         },
@@ -48,24 +57,29 @@ fun HomeScreen(
             }
         },
     ) {
-        TotpCardListView(state.totpList, onRemove = { id -> viewModel.removeTotpById(id) })
+        TotpCardListView(list = state.totpList, onRemove = { id -> viewModel.removeTotpById(id) }, onCopy = { code ->
+            clipboard.setText(AnnotatedString(code))
+            showSnackbar = true
+        })
 
         AddTotpDialog(showDialog, { showDialog = false }, viewModel::addTotp)
     }
+
+    LaunchedSnackbar("Copied", scaffoldState.snackbarHostState, showSnackbar, { showSnackbar = false })
 }
 
 @Composable
-fun TotpCardListView(list: List<TotpCardState>, onRemove: (id: Int) -> Unit) {
+fun TotpCardListView(list: List<TotpCardState>, onRemove: (id: Int) -> Unit, onCopy: (code: String) -> Unit) {
     LazyColumn {
         items(items = list) { item ->
-            TotpCard(item, onRemove)
+            TotpCard(item, onRemove, onCopy)
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit) {
+fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit, onCopy: (code: String) -> Unit) {
     var showPopupMenu by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -76,9 +90,18 @@ fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit) {
             }),
         elevation = 2.dp,
     ) {
-        Column(Modifier.padding(8.dp)) {
-            Text(text = totpCardState.name)
-            Text(fontSize = 28.sp, text = totpCardState.oneTimeCode.toString().padStart(6, '0'))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val codeString = totpCardState.oneTimeCode.toString().padStart(6, '0')
+            Column(Modifier.padding(8.dp)) {
+                Text(text = totpCardState.name)
+                Text(fontSize = 28.sp, text = codeString)
+            }
+            IconButton(onClick = { onCopy(codeString) }) {
+                Icon(painterResource(R.drawable.ic_content_copy), "Copy to clipboard")
+            }
         }
     }
     if (showPopupMenu) {
