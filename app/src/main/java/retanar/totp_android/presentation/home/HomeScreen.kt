@@ -2,6 +2,7 @@
 
 package retanar.totp_android.presentation.home
 
+import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -41,8 +42,8 @@ fun HomeScreen(
     )
 ) {
     val state by viewModel.homeState
-    var showDialog by remember { mutableStateOf(false) }
-    var showSnackbar by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showCopiedSnackbar by remember { mutableStateOf(false) }
     val scaffoldState = rememberScaffoldState()
     val clipboard = LocalClipboardManager.current
 
@@ -52,34 +53,52 @@ fun HomeScreen(
             TopAppBar(title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) })
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
+            FloatingActionButton(onClick = { showAddDialog = true }) {
                 Icon(Icons.Filled.Add, "Add TOTP", tint = Color.White)
             }
         },
     ) {
-        TotpCardListView(list = state.totpList, onRemove = { id -> viewModel.removeTotpById(id) }, onCopy = { code ->
-            clipboard.setText(AnnotatedString(code))
-            showSnackbar = true
-        })
+        TotpCardListView(
+            list = state.totpList,
+            onRemove = viewModel::removeTotpById,
+            onCopy = { code ->
+                clipboard.setText(AnnotatedString(code))
+                showCopiedSnackbar = true
+            },
+            onEdit = viewModel::requestEdit,
+        )
 
-        AddTotpDialog(showDialog, { showDialog = false }, viewModel::addTotp)
+        AddTotpDialog(showAddDialog, { showAddDialog = false }, viewModel::addTotp)
+        EditTotpDialog(state.editingTotp, { viewModel.requestEdit(-1) }, viewModel::editTotp)
     }
 
-    LaunchedSnackbar("Copied", scaffoldState.snackbarHostState, showSnackbar, { showSnackbar = false })
+    // Android 13 (API 33) shows system confirmation on copy
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
+        LaunchedSnackbar("Copied", scaffoldState.snackbarHostState, showCopiedSnackbar, { showCopiedSnackbar = false })
 }
 
 @Composable
-fun TotpCardListView(list: List<TotpCardState>, onRemove: (id: Int) -> Unit, onCopy: (code: String) -> Unit) {
+fun TotpCardListView(
+    list: List<TotpCardState>,
+    onRemove: (id: Int) -> Unit,
+    onCopy: (code: String) -> Unit,
+    onEdit: (id: Int) -> Unit
+) {
     LazyColumn {
         items(items = list) { item ->
-            TotpCard(item, onRemove, onCopy)
+            TotpCard(item, onRemove, onCopy, onEdit)
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit, onCopy: (code: String) -> Unit) {
+fun TotpCard(
+    totpCardState: TotpCardState,
+    onRemove: (id: Int) -> Unit,
+    onCopy: (code: String) -> Unit,
+    onEdit: (id: Int) -> Unit
+) {
     var showPopupMenu by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -107,6 +126,10 @@ fun TotpCard(totpCardState: TotpCardState, onRemove: (id: Int) -> Unit, onCopy: 
     if (showPopupMenu) {
         PopupMenuDialog(
             { showPopupMenu = false },
+            PopupMenuTextItem("Edit") {
+                onEdit(totpCardState.id)
+                showPopupMenu = false
+            },
             PopupMenuTextItem("Remove") { onRemove(totpCardState.id) },
         )
     }
@@ -118,17 +141,65 @@ fun AddTotpDialog(
     onDismiss: () -> Unit,
     onAdd: (name: String, secret: String) -> Unit,
 ) {
+    TotpDialog(
+        title = "Add new TOTP",
+        showDialog = showDialog,
+        actionText = "ADD",
+        onAction = onAdd,
+        onDismiss = onDismiss,
+    )
+}
+
+@Composable
+fun EditTotpDialog(
+    totpState: EditTotpState?,
+    onDismiss: () -> Unit,
+    onEdit: (EditTotpState) -> Unit,
+) {
+    totpState?.let {
+        TotpDialog(
+            showDialog = true,
+            title = "",
+            name = totpState.name,
+            secret = totpState.base32Secret,
+            actionText = "EDIT",
+            onAction = { name, secret -> onEdit(totpState.copy(name = name, base32Secret = secret)) },
+            onDismiss = onDismiss,
+        )
+    }
+}
+
+@Composable
+fun TotpDialog(
+    showDialog: Boolean,
+    title: String,
+    name: String = "",
+    secret: String = "",
+    actionText: String,
+    onAction: (name: String, secret: String) -> Unit,
+    dismissText: String = "CANCEL",
+    onDismiss: () -> Unit,
+) {
     if (!showDialog) return
 
-    var name by remember { mutableStateOf("") }
-    var secret by remember { mutableStateOf("") }
+    var nameField by remember { mutableStateOf(name) }
+    var secretField by remember { mutableStateOf(secret) }
+    var secretIsError by remember { mutableStateOf(false) }
 
     Dialog(onDismiss) {
         Card {
             Column {
+                if (title.isNotBlank())
+                    Text(
+                        title,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                        fontSize = 22.sp,
+                        color = MaterialTheme.colors.primary,
+                        maxLines = 1,
+                    )
                 TextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = nameField,
+                    onValueChange = { nameField = it },
                     label = { Text("Name") },
                     singleLine = true,
                     modifier = Modifier.padding(all = 8.dp).fillMaxWidth(),
@@ -136,10 +207,11 @@ fun AddTotpDialog(
                     colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
                 )
                 TextField(
-                    value = secret,
-                    onValueChange = { secret = it },
+                    value = secretField,
+                    onValueChange = { secretField = it },
                     label = { Text("Secret") },
                     singleLine = true,
+                    isError = secretIsError,
                     modifier = Modifier.padding(all = 8.dp).fillMaxWidth(),
                     textStyle = TextStyle(fontSize = 22.sp),
                     colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
@@ -149,13 +221,19 @@ fun AddTotpDialog(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("CANCEL")
+                        Text(dismissText)
                     }
                     TextButton(onClick = {
-                        onAdd(name, secret)
+                        // TODO put check if all symbols are valid Base32
+                        if (secretField.isEmpty()) {
+                            secretIsError = true
+                            return@TextButton
+                        }
+                        secretIsError = false
+                        onAction(nameField, secretField)
                         onDismiss()
                     }) {
-                        Text("ADD")
+                        Text(actionText)
                     }
                 }
             }

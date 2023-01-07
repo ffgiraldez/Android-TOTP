@@ -15,6 +15,7 @@ import retanar.totp_android.domain.crypto.TotpCodeGenerator
 import retanar.totp_android.domain.entities.EncryptedTotpKey
 import retanar.totp_android.domain.repository.TotpKeyRepository
 import retanar.totp_android.domain.usecases.AddNewTotpUseCase
+import retanar.totp_android.domain.usecases.EditTotpUseCase
 import retanar.totp_android.domain.usecases.GenerateTotpCodeUseCase
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -22,10 +23,11 @@ private const val defaultUpdateStepMs = 30_000L
 
 class HomeViewModel(
     private val totpKeyRepo: TotpKeyRepository,
-    secretEncryptor: SecretEncryptor,
+    private val secretEncryptor: SecretEncryptor,
     totpCodeGenerator: TotpCodeGenerator,
 ) : ViewModel() {
     private val addTotpUseCase = AddNewTotpUseCase(totpKeyRepo, secretEncryptor)
+    private val editTotpUseCase = EditTotpUseCase(totpKeyRepo, secretEncryptor)
     private val generateTotpCodeUseCase = GenerateTotpCodeUseCase(
         totpCodeGenerator,
         secretEncryptor,
@@ -61,6 +63,7 @@ class HomeViewModel(
     }
 
     fun addTotp(name: String, base32Secret: String) {
+        if (base32Secret.isEmpty()) return
         val secret = Base32().decode(base32Secret)
         viewModelScope.launch {
             addTotpUseCase(secret, name)
@@ -71,6 +74,29 @@ class HomeViewModel(
         viewModelScope.launch {
             val toDelete = totpKeyFlow.value.find { key -> key.id == id }!!
             totpKeyRepo.removeKey(toDelete)
+        }
+    }
+
+    fun requestEdit(id: Int) {
+        val toEdit = totpKeyFlow.value.find { key -> key.id == id }
+        homeState.value = homeState.value.copy(
+            editingTotp = if (toEdit == null) {
+                null
+            } else {
+                EditTotpState(
+                    id, toEdit.name, Base32().encode(
+                        secretEncryptor.decrypt(toEdit.secret, toEdit.iv)
+                    ).decodeToString()
+                )
+            }
+        )
+    }
+
+    fun editTotp(edited: EditTotpState) {
+        if (edited.base32Secret.isEmpty()) return
+        val secret = Base32().decode(edited.base32Secret)
+        viewModelScope.launch {
+            editTotpUseCase(edited.id, edited.name, secret)
         }
     }
 }
