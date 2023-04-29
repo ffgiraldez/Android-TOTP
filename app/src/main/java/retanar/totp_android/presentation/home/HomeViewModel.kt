@@ -3,6 +3,7 @@ package retanar.totp_android.presentation.home
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -17,11 +18,13 @@ import retanar.totp_android.domain.repository.TotpKeyRepository
 import retanar.totp_android.domain.usecases.AddNewTotpUseCase
 import retanar.totp_android.domain.usecases.EditTotpUseCase
 import retanar.totp_android.domain.usecases.GenerateTotpCodeUseCase
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 private const val defaultUpdateStepMs = 30_000L
 
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val totpKeyRepo: TotpKeyRepository,
     private val secretEncryptor: SecretEncryptor,
     totpCodeGenerator: TotpCodeGenerator,

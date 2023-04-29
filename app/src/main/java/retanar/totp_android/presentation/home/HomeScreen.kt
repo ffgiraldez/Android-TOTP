@@ -24,20 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retanar.totp_android.R
-import retanar.totp_android.presentation.DependencyContainer
 import retanar.totp_android.presentation.composables.LaunchedSnackbar
 import retanar.totp_android.presentation.composables.PopupMenuDialog
 import retanar.totp_android.presentation.composables.PopupMenuTextItem
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(
-        factory = HomeViewModelFactory(
-            DependencyContainer.totpKeyRepository,
-            DependencyContainer.secretEncryptor,
-            DependencyContainer.totpCodeGenerator,
-        )
-    )
+    viewModel: HomeViewModel = viewModel()
 ) {
     val state by viewModel.homeState
     var showAddDialog by remember { mutableStateOf(false) }

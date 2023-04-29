@@ -3,6 +3,7 @@
           package="retanar.totp_android">
 
     <application
+            android:name=".presentation.MainApplication"
             android:allowBackup="false"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
