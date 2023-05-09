@@ -9,6 +9,7 @@ data class TotpCardState(
     val id: Int,
     val name: String,
     val oneTimeCode: Int,
+    val secondsLeft: Int,
 )
 
 data class EditTotpState(

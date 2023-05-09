@@ -57,6 +57,7 @@ fun HomeScreen(
                 showCopiedSnackbar = true
             },
             onEdit = viewModel::requestEdit,
+            contentPadding = it
         )
 
         AddTotpDialog(showAddDialog, { showAddDialog = false }, viewModel::addTotp)
@@ -73,9 +74,10 @@ fun TotpCardListView(
     list: List<TotpCardState>,
     onRemove: (id: Int) -> Unit,
     onCopy: (code: String) -> Unit,
-    onEdit: (id: Int) -> Unit
+    onEdit: (id: Int) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
 ) {
-    LazyColumn {
+    LazyColumn(Modifier.padding(contentPadding)) {
         items(items = list) { item ->
             TotpCard(item, onRemove, onCopy, onEdit)
         }
@@ -101,7 +103,7 @@ fun TotpCard(
         elevation = 2.dp,
     ) {
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val codeString = totpCardState.oneTimeCode.toString().padStart(6, '0')
@@ -109,6 +111,8 @@ fun TotpCard(
                 Text(text = totpCardState.name)
                 Text(fontSize = 28.sp, text = codeString)
             }
+            Spacer(Modifier.weight(1f))
+            Text(text = totpCardState.secondsLeft.toString())
             IconButton(onClick = { onCopy(codeString) }) {
                 Icon(painterResource(R.drawable.ic_content_copy), "Copy to clipboard")
             }
