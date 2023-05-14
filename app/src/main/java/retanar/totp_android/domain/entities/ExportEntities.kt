@@ -1,13 +1,16 @@
 package retanar.totp_android.domain.entities
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import retanar.totp_android.domain.usecases.SavingMode
 
 @Serializable
+sealed class ExportEntity
+
+@Serializable
+@SerialName("no_encryption")
 class NoEncryptionExport(
     val keysList: List<UnencryptedKey>,
-    val savingMode: SavingMode = SavingMode.NoEncryption,
-)
+): ExportEntity()
 
 @Serializable
 class UnencryptedKey(
@@ -16,10 +19,10 @@ class UnencryptedKey(
 )
 
 @Serializable
+@SerialName("key_encryption")
 class KeyEncryptionExport(
     val keysList: List<EncryptedKey>,
-    val savingMode: SavingMode = SavingMode.KeyEncryption,
-)
+): ExportEntity()
 
 @Serializable
 class EncryptedKey(
@@ -29,9 +32,9 @@ class EncryptedKey(
 )
 
 @Serializable
+@SerialName("full_encryption")
 class FullEncryptionExport(
     // decodes to List<UnencryptedKey>
     val base64Data: String,
     val base64Iv: String,
-    val savingMode: SavingMode = SavingMode.FullEncryption,
-)
+): ExportEntity()

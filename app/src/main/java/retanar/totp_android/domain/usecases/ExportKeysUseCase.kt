@@ -1,11 +1,11 @@
 package retanar.totp_android.domain.usecases
 
-import android.util.Base64
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import org.apache.commons.codec.binary.Base32
+import org.apache.commons.codec.binary.Base64
 import retanar.totp_android.domain.crypto.SecretEncryptor
 import retanar.totp_android.domain.entities.*
 import java.io.OutputStream
@@ -17,36 +17,35 @@ class ExportKeysUseCase(
     private val keys: List<EncryptedTotpKey>,
     private val encryptor: SecretEncryptor,
     private val outputStream: OutputStream,
-    private val savingMode: SavingMode,
+    var savingMode: SavingMode,
 ) {
-    // TODO: TEST
     @OptIn(ExperimentalSerializationApi::class)
-    suspend fun invoke() {
-        when (savingMode) {
+    suspend operator fun invoke() {
+        val export: ExportEntity = when (savingMode) {
             SavingMode.NoEncryption -> {
-                val exportData = NoEncryptionExport(keys.map {
+                NoEncryptionExport(keys.map {
                     UnencryptedKey(
                         it.name, Base32().encode(encryptor.decrypt(it.secret, it.iv)).decodeToString()
                     )
                 })
-                Json.encodeToStream(exportData, outputStream)
             }
 
             SavingMode.KeyEncryption -> {
-                val exportData = KeyEncryptionExport(keys.map {
+                val base64 = Base64()
+                KeyEncryptionExport(keys.map {
                     val newIv = ByteArray(encryptor.ivSize)
                     SecureRandom().nextBytes(newIv)
                     val newEncryptedSecret = encryptor.encrypt(encryptor.decrypt(it.secret, it.iv), newIv)
                     EncryptedKey(
                         it.name,
-                        Base64.encodeToString(newEncryptedSecret, Base64.NO_WRAP),
-                        Base64.encodeToString(newIv, Base64.NO_WRAP)
+                        base64.encode(newEncryptedSecret).decodeToString(),
+                        base64.encode(newIv).decodeToString()
                     )
                 })
-                Json.encodeToStream(exportData, outputStream)
             }
 
             SavingMode.FullEncryption -> {
+                val base64 = Base64()
                 val unencryptedKeysList = keys.map {
                     UnencryptedKey(
                         it.name, Base32().encode(encryptor.decrypt(it.secret, it.iv)).decodeToString()
@@ -57,14 +56,13 @@ class ExportKeysUseCase(
                 val encryptedKeysList = encryptor.encrypt(
                     Json.encodeToString(unencryptedKeysList).encodeToByteArray(), newIv
                 )
-                Json.encodeToStream(
-                    FullEncryptionExport(
-                        Base64.encodeToString(encryptedKeysList, Base64.NO_WRAP),
-                        Base64.encodeToString(newIv, Base64.NO_WRAP)
-                    ), outputStream
+                FullEncryptionExport(
+                    base64.encode(encryptedKeysList).decodeToString(),
+                    base64.encode(newIv).decodeToString()
                 )
             }
         }
+        Json.encodeToStream(export, outputStream)
     }
 }
 
