@@ -15,8 +15,9 @@ enum class SavingMode { NoEncryption, KeyEncryption, FullEncryption }
 
 class ExportKeysUseCase(
     private val keys: List<EncryptedTotpKey>,
-    private val encryptor: SecretEncryptor,
     private val outputStream: OutputStream,
+    private val repositoryEncryptor: SecretEncryptor,
+    private val exportEncryptor: SecretEncryptor? = null,
     var savingMode: SavingMode,
 ) {
     @OptIn(ExperimentalSerializationApi::class)
@@ -25,7 +26,8 @@ class ExportKeysUseCase(
             SavingMode.NoEncryption -> {
                 NoEncryptionExport(keys.map {
                     UnencryptedKey(
-                        it.name, Base32().encode(encryptor.decrypt(it.secret, it.iv)).decodeToString()
+                        it.name,
+                        Base32().encode(repositoryEncryptor.decrypt(it.secret, it.iv)).decodeToString()
                     )
                 })
             }
@@ -33,9 +35,12 @@ class ExportKeysUseCase(
             SavingMode.KeyEncryption -> {
                 val base64 = Base64()
                 KeyEncryptionExport(keys.map {
-                    val newIv = ByteArray(encryptor.ivSize)
+                    val newIv = ByteArray(exportEncryptor!!.ivSize)
                     SecureRandom().nextBytes(newIv)
-                    val newEncryptedSecret = encryptor.encrypt(encryptor.decrypt(it.secret, it.iv), newIv)
+                    val newEncryptedSecret = exportEncryptor.encrypt(
+                        repositoryEncryptor.decrypt(it.secret, it.iv),
+                        newIv
+                    )
                     EncryptedKey(
                         it.name,
                         base64.encode(newEncryptedSecret).decodeToString(),
@@ -48,12 +53,13 @@ class ExportKeysUseCase(
                 val base64 = Base64()
                 val unencryptedKeysList = keys.map {
                     UnencryptedKey(
-                        it.name, Base32().encode(encryptor.decrypt(it.secret, it.iv)).decodeToString()
+                        it.name,
+                        Base32().encode(repositoryEncryptor.decrypt(it.secret, it.iv)).decodeToString()
                     )
                 }
-                val newIv = ByteArray(encryptor.ivSize)
+                val newIv = ByteArray(exportEncryptor!!.ivSize)
                 SecureRandom().nextBytes(newIv)
-                val encryptedKeysList = encryptor.encrypt(
+                val encryptedKeysList = exportEncryptor.encrypt(
                     Json.encodeToString(unencryptedKeysList).encodeToByteArray(), newIv
                 )
                 FullEncryptionExport(
