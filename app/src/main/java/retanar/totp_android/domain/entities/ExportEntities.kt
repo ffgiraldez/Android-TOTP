@@ -22,6 +22,7 @@ class UnencryptedKey(
 @SerialName("key_encryption")
 class KeyEncryptionExport(
     val keysList: List<EncryptedKey>,
+    val base64EncryptionKeySalt: String? = null,
 ): ExportEntity()
 
 @Serializable
@@ -37,4 +38,5 @@ class FullEncryptionExport(
     // decodes to List<UnencryptedKey>
     val base64Data: String,
     val base64Iv: String,
+    val base64EncryptionKeySalt: String? = null,
 ): ExportEntity()

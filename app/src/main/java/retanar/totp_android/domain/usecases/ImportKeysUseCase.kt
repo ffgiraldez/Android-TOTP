@@ -1,5 +1,7 @@
 package retanar.totp_android.domain.usecases
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -13,11 +15,14 @@ import java.io.InputStream
 class ImportKeysUseCase(
     private val addNewTotpUseCase: AddNewTotpUseCase,
     private val inputStream: InputStream,
+    // TODO: Encryptor can't work because key salt is in JSON, and not known
     private val exportEncryptor: SecretEncryptor? = null,
 ) {
     @OptIn(ExperimentalSerializationApi::class)
     suspend operator fun invoke() {
-        when (val exportEntity = Json.decodeFromStream<ExportEntity>(inputStream)) {
+        when (val exportEntity = withContext(Dispatchers.IO) {
+            Json.decodeFromStream<ExportEntity>(inputStream)
+        }) {
             is NoEncryptionExport -> {
                 exportEntity.keysList.forEach {
                     addNewTotpUseCase(Base32().decode(it.base32Secret), it.name)

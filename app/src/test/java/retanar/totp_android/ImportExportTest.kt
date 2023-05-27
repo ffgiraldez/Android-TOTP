@@ -28,7 +28,8 @@ class ImportExportTest {
         outputStream,
         secretEncryptor,
         exportEncryptor,
-        SavingMode.NoEncryption
+        encryptionKeySalt = ByteArray(16),
+        savingMode = SavingMode.NoEncryption
     )
     private val addTotpUseCase = AddNewTotpUseCase(object : TotpKeyRepository {
         override suspend fun addKey(key: EncryptedTotpKey) {
@@ -53,7 +54,7 @@ class ImportExportTest {
     }
 
     @Test
-    fun exportKeyEncrypted() = runBlocking {
+    fun exportImportKeyEncrypted() = runBlocking {
         exportUseCase.savingMode = SavingMode.KeyEncryption
         exportUseCase()
         println(outputStream.toString(Charsets.UTF_8.name()))
@@ -61,7 +62,7 @@ class ImportExportTest {
     }
 
     @Test
-    fun exportFullyEncrypted() = runBlocking {
+    fun exportImportFullyEncrypted() = runBlocking {
         exportUseCase.savingMode = SavingMode.FullEncryption
         exportUseCase()
         println(outputStream.toString(Charsets.UTF_8.name()))

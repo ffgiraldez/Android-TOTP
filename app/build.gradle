@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "retanar.totp_android"
@@ -53,6 +53,9 @@ android {
 }
 
 dependencies {
+    // magic line solving problems with different kotlin versions
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
+
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.6.1'
@@ -81,6 +84,8 @@ dependencies {
     implementation "commons-codec:commons-codec:1.15"
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
+
+    implementation 'com.lambdapioneer.argon2kt:argon2kt:1.4.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

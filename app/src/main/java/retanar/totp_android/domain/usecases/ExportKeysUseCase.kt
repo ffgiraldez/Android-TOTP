@@ -1,5 +1,7 @@
 package retanar.totp_android.domain.usecases
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -18,6 +20,7 @@ class ExportKeysUseCase(
     private val outputStream: OutputStream,
     private val repositoryEncryptor: SecretEncryptor,
     private val exportEncryptor: SecretEncryptor? = null,
+    private val encryptionKeySalt: ByteArray? = null,
     var savingMode: SavingMode,
 ) {
     @OptIn(ExperimentalSerializationApi::class)
@@ -46,7 +49,9 @@ class ExportKeysUseCase(
                         base64.encode(newEncryptedSecret).decodeToString(),
                         base64.encode(newIv).decodeToString()
                     )
-                })
+                },
+                    encryptionKeySalt?.let { base64.encode(it).decodeToString() }
+                )
             }
 
             SavingMode.FullEncryption -> {
@@ -64,11 +69,14 @@ class ExportKeysUseCase(
                 )
                 FullEncryptionExport(
                     base64.encode(encryptedKeysList).decodeToString(),
-                    base64.encode(newIv).decodeToString()
+                    base64.encode(newIv).decodeToString(),
+                    encryptionKeySalt?.let { base64.encode(it).decodeToString() }
                 )
             }
         }
-        Json.encodeToStream(export, outputStream)
+        withContext(Dispatchers.IO) {
+            Json.encodeToStream(export, outputStream)
+        }
     }
 }
 
