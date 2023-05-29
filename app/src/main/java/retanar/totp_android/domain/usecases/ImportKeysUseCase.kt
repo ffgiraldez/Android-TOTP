@@ -15,8 +15,7 @@ import java.io.InputStream
 class ImportKeysUseCase(
     private val addNewTotpUseCase: AddNewTotpUseCase,
     private val inputStream: InputStream,
-    // TODO: Encryptor can't work because key salt is in JSON, and not known
-    private val exportEncryptor: SecretEncryptor? = null,
+    private val getExportEncryptor: (keySalt: ByteArray?) -> SecretEncryptor? = { null },
 ) {
     @OptIn(ExperimentalSerializationApi::class)
     suspend operator fun invoke() {
@@ -31,8 +30,9 @@ class ImportKeysUseCase(
 
             is KeyEncryptionExport -> {
                 val base64 = Base64()
+                val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt))!!
                 exportEntity.keysList.forEach {
-                    val plainSecret = exportEncryptor!!.decrypt(
+                    val plainSecret = exportEncryptor.decrypt(
                         base64.decode(it.base64Secret),
                         base64.decode(it.base64Iv)
                     )
@@ -42,7 +42,8 @@ class ImportKeysUseCase(
 
             is FullEncryptionExport -> {
                 val base64 = Base64()
-                val json = exportEncryptor!!.decrypt(
+                val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt))!!
+                val json = exportEncryptor.decrypt(
                     base64.decode(exportEntity.base64Data),
                     base64.decode(exportEntity.base64Iv)
                 )

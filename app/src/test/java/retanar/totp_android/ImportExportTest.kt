@@ -73,7 +73,7 @@ class ImportExportTest {
         ImportKeysUseCase(
             addTotpUseCase,
             ByteArrayInputStream(outputStream.toByteArray()),
-            exportEncryptor,
+            { exportEncryptor },
         )()
     }
 }
