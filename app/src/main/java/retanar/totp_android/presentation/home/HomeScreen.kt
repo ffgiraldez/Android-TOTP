@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package retanar.totp_android.presentation.home
 
 import android.os.Build
@@ -11,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,13 +34,24 @@ fun HomeScreen(
     val state by viewModel.homeState
     var showAddDialog by remember { mutableStateOf(false) }
     var showCopiedSnackbar by remember { mutableStateOf(false) }
+    var showMoreMenu by remember { mutableStateOf(false) }
     val scaffoldState = rememberScaffoldState()
     val clipboard = LocalClipboardManager.current
 
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) },
+                actions = {
+                    Box(Modifier.fillMaxHeight()) {
+                        IconButton(onClick = { showMoreMenu = !showMoreMenu }) {
+                            Icon(Icons.Filled.MoreVert, "More options")
+                        }
+                        ThreeDotMenu(showMoreMenu) { showMoreMenu = false }
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
@@ -130,4 +140,18 @@ fun TotpCard(
     }
 }
 
-
+@Composable
+fun ThreeDotMenu(
+    showMenu: Boolean,
+    onDismiss: () -> Unit,
+) {
+    DropdownMenu(showMenu, onDismiss) {
+        DropdownMenuItem(
+            onClick = {
+                // TODO navigate to export screen
+            }
+        ) {
+            Text("Export")
+        }
+    }
+}
