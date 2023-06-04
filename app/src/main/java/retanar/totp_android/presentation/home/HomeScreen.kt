@@ -29,7 +29,8 @@ import retanar.totp_android.presentation.composables.PopupMenuTextItem
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    navigateExport: () -> Unit,
 ) {
     val state by viewModel.homeState
     var showAddDialog by remember { mutableStateOf(false) }
@@ -48,7 +49,13 @@ fun HomeScreen(
                         IconButton(onClick = { showMoreMenu = !showMoreMenu }) {
                             Icon(Icons.Filled.MoreVert, "More options")
                         }
-                        ThreeDotMenu(showMoreMenu) { showMoreMenu = false }
+                        ThreeDotMenu(
+                            showMoreMenu,
+                            onDismiss = { showMoreMenu = false },
+                            items = listOf(
+                                "Export" to navigateExport,
+                            )
+                        )
                     }
                 }
             )
@@ -144,14 +151,13 @@ fun TotpCard(
 fun ThreeDotMenu(
     showMenu: Boolean,
     onDismiss: () -> Unit,
+    items: List<Pair<String, () -> Unit>>,
 ) {
     DropdownMenu(showMenu, onDismiss) {
-        DropdownMenuItem(
-            onClick = {
-                // TODO navigate to export screen
+        items.forEach { (text, action) ->
+            DropdownMenuItem(onClick = action) {
+                Text(text)
             }
-        ) {
-            Text("Export")
         }
     }
 }

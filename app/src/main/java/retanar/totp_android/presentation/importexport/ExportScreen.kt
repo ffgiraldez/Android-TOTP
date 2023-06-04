@@ -3,22 +3,30 @@ package retanar.totp_android.presentation.importexport
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 val exportOptions = listOf("No encryption", "Encrypt only keys", "Encrypt everything")
 
-@Preview
 @Composable
-fun ExportScreen() {
+fun ExportScreen(
+    onPopBack: () -> Unit,
+) {
     var currentExportChoice by remember { mutableStateOf(0) }
     Scaffold(topBar = {
-        TopAppBar(title = { Text("Export", fontWeight = FontWeight.Bold) })
+        TopAppBar(
+            title = { Text("Export", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onPopBack) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                }
+            },
+        )
     }) {
         Column(
             Modifier
@@ -40,7 +48,7 @@ fun ExportTypeMenu(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
+    ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = !isExpanded }) {
         TextField(
             value = exportOptions[currentChoice],
             readOnly = true,
