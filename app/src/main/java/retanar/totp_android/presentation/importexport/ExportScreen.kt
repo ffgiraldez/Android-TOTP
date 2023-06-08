@@ -8,8 +8,13 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import retanar.totp_android.R
 
 val exportOptions = listOf("No encryption", "Encrypt only keys", "Encrypt everything")
 
@@ -18,6 +23,9 @@ fun ExportScreen(
     onPopBack: () -> Unit,
 ) {
     var currentExportChoice by remember { mutableStateOf(0) }
+    var encryptionPassword by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
+
     Scaffold(topBar = {
         TopAppBar(
             title = { Text("Export", fontWeight = FontWeight.Bold) },
@@ -31,11 +39,51 @@ fun ExportScreen(
         Column(
             Modifier
                 .padding(it)
-                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
             ExportTypeMenu(currentExportChoice, { currentExportChoice = it })
 
+            if (currentExportChoice != 0) {
+                Spacer(Modifier.height(32.dp))
+                OutlinedTextField(
+                    value = encryptionPassword,
+                    onValueChange = { newPass -> encryptionPassword = newPass },
+                    singleLine = true,
+                    visualTransformation = if (showPassword) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { showPassword = !showPassword }) {
+                            Icon(
+                                painterResource(
+                                    if (showPassword) {
+                                        R.drawable.visibility_off_filled
+                                    } else {
+                                        R.drawable.visibility_filled
+                                    }
+                                ),
+                                contentDescription = "Toggle visibility"
+                            )
+                        }
+                    },
+                    label = { Text("Password") },
+                )
+            }
+
+            Spacer(Modifier.weight(1f))
+            Button(
+                onClick = { /*TODO: connect to ViewModel */ },
+                Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("EXPORT")
+            }
         }
     }
 }
@@ -69,4 +117,10 @@ fun ExportTypeMenu(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewExportScreen() {
+    ExportScreen {}
 }
