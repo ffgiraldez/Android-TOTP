@@ -6,7 +6,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retanar.totp_android.data.crypto.AesGcmSecretEncryptor
 import retanar.totp_android.data.crypto.AndroidKeyStoreRepository
+import retanar.totp_android.data.crypto.Argon2PasswordHasher
 import retanar.totp_android.data.crypto.TotpCodeGeneratorImpl
+import retanar.totp_android.domain.crypto.PasswordHasher
 import retanar.totp_android.domain.crypto.SecretEncryptor
 import retanar.totp_android.domain.crypto.SecretKeyRepository
 import retanar.totp_android.domain.crypto.TotpCodeGenerator
@@ -28,4 +30,7 @@ object CryptoModule {
 
     @Provides
     fun provideTotpCodeGenerator(): TotpCodeGenerator = TotpCodeGeneratorImpl()
+
+    @Provides
+    fun provideArgon2PasswordHasher(): PasswordHasher = Argon2PasswordHasher()
 }

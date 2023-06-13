@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import retanar.totp_android.presentation.home.HomeScreen
 import retanar.totp_android.presentation.home.HomeViewModel
 import retanar.totp_android.presentation.importexport.ExportScreen
+import retanar.totp_android.presentation.importexport.ExportViewModel
 import retanar.totp_android.presentation.theme.TOTPTheme
 
 @AndroidEntryPoint
@@ -27,14 +28,15 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController, startDestination = "home") {
                         composable("home") {
                             // proper way to create ViewModel with Hilt and Navigation Compose
-                            val viewModel = hiltViewModel<HomeViewModel>()
+                            val homeViewModel = hiltViewModel<HomeViewModel>()
                             HomeScreen(
-                                viewModel,
+                                homeViewModel,
                                 navigateExport = { navController.navigate("export") },
                             )
                         }
                         composable("export") {
-                            ExportScreen(onPopBack = { navController.popBackStack() })
+                            val exportViewModel = hiltViewModel<ExportViewModel>()
+                            ExportScreen(exportViewModel, onPopBack = { navController.popBackStack() })
                         }
                     }
                 }
