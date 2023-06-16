@@ -127,7 +127,7 @@ fun ExportTypeMenu(
         TextField(
             value = exportOptions[currentChoice].first,
             readOnly = true,
-            maxLines = 1,
+            singleLine = true,
             trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = "Show other options") },
             onValueChange = {},
         )

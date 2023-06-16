@@ -13,15 +13,20 @@ import retanar.totp_android.domain.entities.*
 import java.io.InputStream
 
 class ImportKeysUseCase(
-    private val addNewTotpUseCase: AddNewTotpUseCase,
-    private val inputStream: InputStream,
-    private val getExportEncryptor: (keySalt: ByteArray?) -> SecretEncryptor? = { null },
+    private val addNewTotpUseCase: AddNewTotpUseCase
 ) {
     @OptIn(ExperimentalSerializationApi::class)
-    suspend operator fun invoke() {
-        when (val exportEntity = withContext(Dispatchers.IO) {
+    suspend fun prepare(inputStream: InputStream): ExportEntity {
+        return withContext(Dispatchers.IO) {
             Json.decodeFromStream<ExportEntity>(inputStream)
-        }) {
+        }
+    }
+
+    suspend operator fun invoke(
+        exportEntity: ExportEntity,
+        getExportEncryptor: (keySalt: ByteArray?) -> SecretEncryptor? = { null }
+    ) {
+        when (exportEntity) {
             is NoEncryptionExport -> {
                 exportEntity.keysList.forEach {
                     addNewTotpUseCase(Base32().decode(it.base32Secret), it.name)

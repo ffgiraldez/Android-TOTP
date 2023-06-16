@@ -70,10 +70,10 @@ class ImportExportTest {
     }
 
     fun importBack() = runBlocking {
-        ImportKeysUseCase(
+        val iuc = ImportKeysUseCase(
             addTotpUseCase,
-            ByteArrayInputStream(outputStream.toByteArray()),
-            { exportEncryptor },
-        )()
+        )
+        val entity = iuc.prepare(ByteArrayInputStream(outputStream.toByteArray()))
+        iuc(entity, { exportEncryptor })
     }
 }
