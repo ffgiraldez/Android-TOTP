@@ -11,14 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import retanar.totp_android.R
 import retanar.totp_android.domain.usecases.SavingMode
+import retanar.totp_android.presentation.composables.PasswordTextField
 
 val exportOptions = listOf(
     "No encryption" to SavingMode.NoEncryption,
@@ -33,7 +30,6 @@ fun ExportScreen(
 ) {
     var currentExportChoice by remember { mutableStateOf(0) }
     var encryptionPassword by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -75,30 +71,10 @@ fun ExportScreen(
 
             if (currentExportChoice != 0) {
                 Spacer(Modifier.height(32.dp))
-                OutlinedTextField(
+                PasswordTextField(
+                    label = "Password",
                     value = encryptionPassword,
                     onValueChange = { newPass -> encryptionPassword = newPass },
-                    singleLine = true,
-                    visualTransformation = if (showPassword) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }) {
-                            Icon(
-                                painterResource(
-                                    if (showPassword) {
-                                        R.drawable.visibility_off_filled
-                                    } else {
-                                        R.drawable.visibility_filled
-                                    }
-                                ),
-                                contentDescription = "Toggle visibility"
-                            )
-                        }
-                    },
-                    label = { Text("Password") },
                 )
             }
 

@@ -14,6 +14,8 @@ import retanar.totp_android.presentation.home.HomeScreen
 import retanar.totp_android.presentation.home.HomeViewModel
 import retanar.totp_android.presentation.importexport.ExportScreen
 import retanar.totp_android.presentation.importexport.ExportViewModel
+import retanar.totp_android.presentation.importexport.ImportScreen
+import retanar.totp_android.presentation.importexport.ImportViewModel
 import retanar.totp_android.presentation.theme.TOTPTheme
 
 @AndroidEntryPoint
@@ -32,11 +34,16 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 homeViewModel,
                                 navigateExport = { navController.navigate("export") },
+                                navigateImport = { navController.navigate("import") },
                             )
                         }
                         composable("export") {
                             val exportViewModel = hiltViewModel<ExportViewModel>()
                             ExportScreen(exportViewModel, onPopBack = { navController.popBackStack() })
+                        }
+                        composable("import") {
+                            val importViewModel = hiltViewModel<ImportViewModel>()
+                            ImportScreen(importViewModel, onPopBack = { navController.popBackStack() })
                         }
                     }
                 }

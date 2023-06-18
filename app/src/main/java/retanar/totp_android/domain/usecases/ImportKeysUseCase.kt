@@ -35,11 +35,12 @@ class ImportKeysUseCase(
 
             is KeyEncryptionExport -> {
                 val base64 = Base64()
-                val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt))!!
+                // apache Base64.decode doesn't work with String on Android
+                val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt?.toByteArray()))!!
                 exportEntity.keysList.forEach {
                     val plainSecret = exportEncryptor.decrypt(
-                        base64.decode(it.base64Secret),
-                        base64.decode(it.base64Iv)
+                        base64.decode(it.base64Secret.toByteArray()),
+                        base64.decode(it.base64Iv.toByteArray())
                     )
                     addNewTotpUseCase(plainSecret, it.name)
                 }
@@ -47,10 +48,10 @@ class ImportKeysUseCase(
 
             is FullEncryptionExport -> {
                 val base64 = Base64()
-                val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt))!!
+                val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt?.toByteArray()))!!
                 val json = exportEncryptor.decrypt(
-                    base64.decode(exportEntity.base64Data),
-                    base64.decode(exportEntity.base64Iv)
+                    base64.decode(exportEntity.base64Data.toByteArray()),
+                    base64.decode(exportEntity.base64Iv.toByteArray())
                 )
                 val keyList = Json.decodeFromString<List<UnencryptedKey>>(json.decodeToString())
                 keyList.forEach {

@@ -31,6 +31,7 @@ import retanar.totp_android.presentation.composables.PopupMenuTextItem
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     navigateExport: () -> Unit,
+    navigateImport: () -> Unit,
 ) {
     val state by viewModel.homeState
     var showAddDialog by remember { mutableStateOf(false) }
@@ -54,6 +55,7 @@ fun HomeScreen(
                             onDismiss = { showMoreMenu = false },
                             items = listOf(
                                 "Export" to navigateExport,
+                                "Import" to navigateImport,
                             )
                         )
                     }
