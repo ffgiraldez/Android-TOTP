@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
+import retanar.totp_android.presentation.composables.LaunchedSnackbar
 import retanar.totp_android.presentation.composables.PasswordTextField
 
 @Composable
@@ -24,6 +25,7 @@ fun ImportScreen(
 ) {
     var showPasswordDialog by remember { mutableStateOf(false) }
 
+    val scaffoldState = rememberScaffoldState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val getInputStreamLauncher = rememberLauncherForActivityResult(
@@ -37,7 +39,8 @@ fun ImportScreen(
                 showPasswordDialog = isPasswordNeeded
                 if (isPasswordNeeded.not()) {
                     viewModel.import()
-                    onPopBack()
+                    if (viewModel.errorText.isEmpty())
+                        onPopBack()
                 }
             }
         }
@@ -45,16 +48,20 @@ fun ImportScreen(
     LaunchedEffect(Unit) {
         getInputStreamLauncher.launch(arrayOf("application/json"))
     }
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text("Export", fontWeight = FontWeight.Bold) },
-            navigationIcon = {
-                IconButton(onClick = onPopBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-            },
-        )
-    }) { paddingValues ->
+    // TODO: allow user to choose what codes to import, and show duplicates
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Export", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onPopBack) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+            )
+        },
+        scaffoldState = scaffoldState,
+    ) { paddingValues ->
         Column(
             Modifier
                 .padding(paddingValues)
@@ -62,7 +69,16 @@ fun ImportScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(text = "Import in progress", style = MaterialTheme.typography.h5)
+            if (viewModel.errorText.isEmpty()) {
+                Text(text = "Import in progress", style = MaterialTheme.typography.h5)
+            } else {
+                Text(text = viewModel.errorText)
+                Button(onClick = {
+                    getInputStreamLauncher.launch(arrayOf("application/json"))
+                }) {
+                    Text(text = "Try again")
+                }
+            }
         }
 
         AskPasswordDialog(
@@ -72,11 +88,20 @@ fun ImportScreen(
                 onPopBack()
             },
             onSuccess = { password ->
+                showPasswordDialog = false
                 coroutineScope.launch {
                     viewModel.import(password)
-                    onPopBack()
+                    if (viewModel.errorText.isEmpty())
+                        onPopBack()
                 }
             },
+        )
+
+        LaunchedSnackbar(
+            text = viewModel.errorText,
+            snackbarHostState = scaffoldState.snackbarHostState,
+            showSnackbar = viewModel.errorText.isNotEmpty(),
+            onDismiss = { viewModel.errorText }
         )
     }
 }

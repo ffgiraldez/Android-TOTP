@@ -144,7 +144,10 @@ fun TotpCard(
                 onEdit(totpCardState.id)
                 showPopupMenu = false
             },
-            PopupMenuTextItem("Remove") { onRemove(totpCardState.id) },
+            PopupMenuTextItem("Remove") {
+                onRemove(totpCardState.id)
+                showPopupMenu = false
+            },
         )
     }
 }
