@@ -3,12 +3,14 @@ package retanar.totp_android.presentation.importexport
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,7 @@ fun ImportScreen(
     viewModel: ImportViewModel,
     onPopBack: () -> Unit,
 ) {
+    val state = viewModel.importScreenState
     var showPasswordDialog by remember { mutableStateOf(false) }
 
     val scaffoldState = rememberScaffoldState()
@@ -39,8 +42,6 @@ fun ImportScreen(
                 showPasswordDialog = isPasswordNeeded
                 if (isPasswordNeeded.not()) {
                     viewModel.import()
-                    if (viewModel.errorText.isEmpty())
-                        onPopBack()
                 }
             }
         }
@@ -48,7 +49,7 @@ fun ImportScreen(
     LaunchedEffect(Unit) {
         getInputStreamLauncher.launch(arrayOf("application/json"))
     }
-    // TODO: allow user to choose what codes to import, and show duplicates
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,15 +70,30 @@ fun ImportScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            if (viewModel.errorText.isEmpty()) {
-                Text(text = "Import in progress", style = MaterialTheme.typography.h5)
-            } else {
-                Text(text = viewModel.errorText)
+            if (!state.errorText.isNullOrEmpty()) {
+                Text(text = state.errorText)
                 Button(onClick = {
                     getInputStreamLauncher.launch(arrayOf("application/json"))
                 }) {
-                    Text(text = "Try again")
+                    Text(text = "TRY AGAIN", fontWeight = FontWeight.Bold)
                 }
+            } else if (!state.importedKeys.isNullOrEmpty()) {
+                Text("Choose keys to import:", fontSize = 22.sp, modifier = Modifier.padding(8.dp))
+                ImportedKeysList(
+                    state.importedKeys,
+                    onCheckedChange = { viewModel.changeCheck(it) },
+                    Modifier.weight(1f)
+                )
+                Button(onClick = {
+                    coroutineScope.launch {
+                        viewModel.addSelected()
+                        onPopBack()
+                    }
+                }) {
+                    Text("ADD SELECTED", fontWeight = FontWeight.Bold)
+                }
+            } else {
+                Text(text = "Import in progress", style = MaterialTheme.typography.h5)
             }
         }
 
@@ -91,17 +107,15 @@ fun ImportScreen(
                 showPasswordDialog = false
                 coroutineScope.launch {
                     viewModel.import(password)
-                    if (viewModel.errorText.isEmpty())
-                        onPopBack()
                 }
             },
         )
 
         LaunchedSnackbar(
-            text = viewModel.errorText,
+            text = state.errorText ?: "",
             snackbarHostState = scaffoldState.snackbarHostState,
-            showSnackbar = viewModel.errorText.isNotEmpty(),
-            onDismiss = { viewModel.errorText }
+            showSnackbar = !state.errorText.isNullOrEmpty(),
+            onDismiss = { /*TODO: because I don't use showSnackbar as a separate var, I have nothing to do here*/ }
         )
     }
 }
@@ -138,6 +152,37 @@ fun AskPasswordDialog(
                     }
                     TextButton(onClick = onDismiss) {
                         Text("CANCEL")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ImportedKeysList(keys: List<ImportedItemState>, onCheckedChange: (Int) -> Unit, modifier: Modifier = Modifier) {
+    LazyColumn(modifier.fillMaxSize()) {
+        items(keys.size) { index ->
+            val item = keys[index]
+            Card(
+                Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = item.checked, onCheckedChange = { onCheckedChange(index) })
+                    Column {
+                        Text(item.name, fontSize = 20.sp)
+                        Text(
+                            if (!item.secretSimilarity.isNullOrEmpty())
+                                "Secret value is similar to ${item.secretSimilarity}"
+                            else if (!item.nameSimilarity.isNullOrEmpty())
+                                "Name is similar to ${item.nameSimilarity}"
+                            else
+                                "",
+                            fontSize = 16.sp,
+                            color = Color.Gray
+                        )
                     }
                 }
             }

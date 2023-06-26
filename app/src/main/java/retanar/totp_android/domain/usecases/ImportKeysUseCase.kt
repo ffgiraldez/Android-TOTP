@@ -12,9 +12,7 @@ import retanar.totp_android.domain.crypto.SecretEncryptor
 import retanar.totp_android.domain.entities.*
 import java.io.InputStream
 
-class ImportKeysUseCase(
-    private val addNewTotpUseCase: AddNewTotpUseCase
-) {
+class ImportKeysUseCase {
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun prepare(inputStream: InputStream): ExportEntity {
         return withContext(Dispatchers.IO) {
@@ -22,27 +20,23 @@ class ImportKeysUseCase(
         }
     }
 
-    suspend operator fun invoke(
+    operator fun invoke(
         exportEntity: ExportEntity,
         getExportEncryptor: (keySalt: ByteArray?) -> SecretEncryptor? = { null }
-    ) {
-        when (exportEntity) {
-            is NoEncryptionExport -> {
-                exportEntity.keysList.forEach {
-                    addNewTotpUseCase(Base32().decode(it.base32Secret), it.name)
-                }
-            }
+    ): List<UnencryptedKey> {
+        return when (exportEntity) {
+            is NoEncryptionExport -> exportEntity.keysList
 
             is KeyEncryptionExport -> {
                 val base64 = Base64()
                 // apache Base64.decode doesn't work with String on Android
                 val exportEncryptor = getExportEncryptor(base64.decode(exportEntity.base64EncryptionKeySalt?.toByteArray()))!!
-                exportEntity.keysList.forEach {
+                exportEntity.keysList.map {
                     val plainSecret = exportEncryptor.decrypt(
                         base64.decode(it.base64Secret.toByteArray()),
                         base64.decode(it.base64Iv.toByteArray())
                     )
-                    addNewTotpUseCase(plainSecret, it.name)
+                    UnencryptedKey(it.name, Base32().encode(plainSecret).decodeToString())
                 }
             }
 
@@ -53,10 +47,7 @@ class ImportKeysUseCase(
                     base64.decode(exportEntity.base64Data.toByteArray()),
                     base64.decode(exportEntity.base64Iv.toByteArray())
                 )
-                val keyList = Json.decodeFromString<List<UnencryptedKey>>(json.decodeToString())
-                keyList.forEach {
-                    addNewTotpUseCase(Base32().decode(it.base32Secret), it.name)
-                }
+                Json.decodeFromString<List<UnencryptedKey>>(json.decodeToString())
             }
         }
     }
