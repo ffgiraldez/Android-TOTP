@@ -70,8 +70,7 @@ fun TotpDialog(
                     Text(
                         title,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                        fontSize = 22.sp,
-                        color = MaterialTheme.colors.primary,
+                        style = MaterialTheme.typography.h5,
                         maxLines = 1,
                     )
                 TextField(
@@ -103,7 +102,7 @@ fun TotpDialog(
                 )
                 Row(
                     horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(end = 4.dp),
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(dismissText)

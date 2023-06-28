@@ -34,8 +34,11 @@ fun ImportScreen(
     val getInputStreamLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { content ->
-        if (content == null)
+        // Because such condition usually happens when user cancels choosing the file, program pops back
+        if (content == null) {
+            onPopBack()
             return@rememberLauncherForActivityResult
+        }
         coroutineScope.launch {
             context.contentResolver.openInputStream(content)?.use { importStream ->
                 val isPasswordNeeded = viewModel.prepareAndCheckPassword(importStream)
@@ -53,7 +56,7 @@ fun ImportScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Export", fontWeight = FontWeight.Bold) },
+                title = { Text("Import", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onPopBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -84,13 +87,19 @@ fun ImportScreen(
                     onCheckedChange = { viewModel.changeCheck(it) },
                     Modifier.weight(1f)
                 )
-                Button(onClick = {
-                    coroutineScope.launch {
-                        viewModel.addSelected()
-                        onPopBack()
-                    }
-                }) {
-                    Text("ADD SELECTED", fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.addSelected()
+                            onPopBack()
+                        }
+                    },
+                    Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = MaterialTheme.shapes.large,
+                ) {
+                    Text("ADD SELECTED", style = MaterialTheme.typography.button)
                 }
             } else {
                 Text(text = "Import in progress", style = MaterialTheme.typography.h5)
@@ -180,8 +189,8 @@ fun ImportedKeysList(keys: List<ImportedItemState>, onCheckedChange: (Int) -> Un
                                 "Name is similar to ${item.nameSimilarity}"
                             else
                                 "",
-                            fontSize = 16.sp,
-                            color = Color.Gray
+                            style = MaterialTheme.typography.subtitle1,
+                            color = Color.Gray,
                         )
                     }
                 }

@@ -83,9 +83,10 @@ fun ExportScreen(
                 onClick = { getOutputStreamLauncher.launch("export.json") },
                 Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                shape = MaterialTheme.shapes.large,
             ) {
-                Text("EXPORT")
+                Text("EXPORT", style = MaterialTheme.typography.button)
             }
         }
     }

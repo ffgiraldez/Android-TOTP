@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -20,7 +21,7 @@ fun PopupMenuDialog(onDismiss: () -> Unit, vararg items: PopupMenuTextItem) {
             Column(Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 items.forEach { item ->
                     TextButton(modifier = Modifier.fillMaxWidth(), onClick = item.onClick) {
-                        Text(item.text, textAlign = TextAlign.Center)
+                        Text(item.text, textAlign = TextAlign.Center, style = MaterialTheme.typography.button)
                     }
                 }
             }

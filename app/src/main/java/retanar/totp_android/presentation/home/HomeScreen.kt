@@ -20,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retanar.totp_android.R
 import retanar.totp_android.presentation.composables.LaunchedSnackbar
@@ -46,7 +45,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) },
                 actions = {
-                    Box(Modifier.fillMaxHeight()) {
+                    Box(Modifier.align(Alignment.CenterVertically)) {
                         IconButton(onClick = { showMoreMenu = !showMoreMenu }) {
                             Icon(Icons.Filled.MoreVert, "More options")
                         }
@@ -126,9 +125,9 @@ fun TotpCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val codeString = totpCardState.oneTimeCode.toString().padStart(6, '0')
-            Column(Modifier.padding(8.dp)) {
-                Text(text = totpCardState.name)
-                Text(fontSize = 28.sp, text = codeString)
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                Text(text = totpCardState.name, style = MaterialTheme.typography.subtitle1, color = Color.DarkGray)
+                Text(text = codeString, style = MaterialTheme.typography.h4)
             }
             Spacer(Modifier.weight(1f))
             Text(text = totpCardState.secondsLeft.toString())
@@ -161,7 +160,7 @@ fun ThreeDotMenu(
     DropdownMenu(showMenu, onDismiss) {
         items.forEach { (text, action) ->
             DropdownMenuItem(onClick = action) {
-                Text(text)
+                Text(text, style = MaterialTheme.typography.subtitle1)
             }
         }
     }
