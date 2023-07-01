@@ -1,12 +1,12 @@
 package retanar.totp_android
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertArrayEquals
+import org.apache.commons.codec.binary.Base32
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import retanar.totp_android.data.crypto.AesGcmSecretEncryptor
 import retanar.totp_android.domain.entities.EncryptedTotpKey
-import retanar.totp_android.domain.repository.TotpKeyRepository
-import retanar.totp_android.domain.usecases.AddNewTotpUseCase
+import retanar.totp_android.domain.entities.UnencryptedKey
 import retanar.totp_android.domain.usecases.ExportKeysUseCase
 import retanar.totp_android.domain.usecases.ImportKeysUseCase
 import retanar.totp_android.domain.usecases.SavingMode
@@ -31,19 +31,6 @@ class ImportExportTest {
         encryptionKeySalt = ByteArray(16),
         savingMode = SavingMode.NoEncryption
     )
-    private val addTotpUseCase = AddNewTotpUseCase(object : TotpKeyRepository {
-        override suspend fun addKey(key: EncryptedTotpKey) {
-            val stored = keyList.find { it.name == key.name }!!
-            assertArrayEquals(
-                secretEncryptor.decrypt(stored.secret, stored.iv),
-                secretEncryptor.decrypt(key.secret, key.iv)
-            )
-        }
-
-        override fun getAllKeys() = throw Exception()
-        override suspend fun removeKey(key: EncryptedTotpKey) {}
-        override suspend fun editKey(key: EncryptedTotpKey) {}
-    }, secretEncryptor)
 
     @Test
     fun exportImportUnencrypted() = runBlocking {
@@ -70,10 +57,13 @@ class ImportExportTest {
     }
 
     fun importBack() = runBlocking {
-        val iuc = ImportKeysUseCase(
-            addTotpUseCase,
-        )
+        val iuc = ImportKeysUseCase()
         val entity = iuc.prepare(ByteArrayInputStream(outputStream.toByteArray()))
-        iuc(entity, { exportEncryptor })
+        val imported = iuc(entity, { exportEncryptor })
+        keyList.map { key ->
+            UnencryptedKey(key.name, Base32().encode(secretEncryptor.decrypt(key.secret, key.iv)).decodeToString())
+        }.forEach { realKey ->
+            assertNotNull(imported.find { it.name == realKey.name && it.base32Secret == realKey.base32Secret })
+        }
     }
 }
