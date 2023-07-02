@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import retanar.totp_android.R
 
+// TODO: field shouldn't expand if text is too wide
 @Composable
 fun PasswordTextField(
     label: String,

@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import retanar.totp_android.presentation.composables.LaunchedSnackbar
@@ -81,7 +80,7 @@ fun ImportScreen(
                     Text(text = "TRY AGAIN", fontWeight = FontWeight.Bold)
                 }
             } else if (!state.importedKeys.isNullOrEmpty()) {
-                Text("Choose keys to import:", fontSize = 22.sp, modifier = Modifier.padding(8.dp))
+                Text("Choose keys to import:", style = MaterialTheme.typography.h5, modifier = Modifier.padding(8.dp))
                 ImportedKeysList(
                     state.importedKeys,
                     onCheckedChange = { viewModel.changeCheck(it) },
@@ -143,8 +142,7 @@ fun AskPasswordDialog(
                 Text(
                     "Enter export password",
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                    fontSize = 22.sp,
-                    color = MaterialTheme.colors.primary,
+                    style = MaterialTheme.typography.h5,
                     maxLines = 1,
                 )
                 PasswordTextField(
@@ -176,19 +174,20 @@ fun ImportedKeysList(keys: List<ImportedItemState>, onCheckedChange: (Int) -> Un
             Card(
                 Modifier
                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                elevation = 2.dp,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = item.checked, onCheckedChange = { onCheckedChange(index) })
                     Column {
-                        Text(item.name, fontSize = 20.sp)
+                        Text(item.name, style = MaterialTheme.typography.h6)
                         Text(
                             if (!item.secretSimilarity.isNullOrEmpty())
                                 "Secret value is similar to ${item.secretSimilarity}"
                             else if (!item.nameSimilarity.isNullOrEmpty())
                                 "Name is similar to ${item.nameSimilarity}"
                             else
-                                "",
+                                "Not similar to any of the existing",
                             style = MaterialTheme.typography.subtitle1,
                             color = Color.Gray,
                         )

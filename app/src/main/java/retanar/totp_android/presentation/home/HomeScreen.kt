@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,7 +62,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(Icons.Filled.Add, "Add TOTP", tint = Color.White)
+                Icon(Icons.Filled.Add, "Add TOTP")
             }
         },
     ) {
@@ -95,7 +94,11 @@ fun TotpCardListView(
     onEdit: (id: Int) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
-    LazyColumn(Modifier.padding(contentPadding)) {
+    LazyColumn(
+        Modifier
+            .padding(contentPadding)
+            .padding(vertical = 4.dp)
+    ) {
         items(items = list) { item ->
             TotpCard(item, onRemove, onCopy, onEdit)
         }
@@ -113,7 +116,7 @@ fun TotpCard(
     var showPopupMenu by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
             .combinedClickable(onClick = {}, onLongClick = {
                 showPopupMenu = true
@@ -126,7 +129,7 @@ fun TotpCard(
         ) {
             val codeString = totpCardState.oneTimeCode.toString().padStart(6, '0')
             Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                Text(text = totpCardState.name, style = MaterialTheme.typography.subtitle1, color = Color.DarkGray)
+                Text(text = totpCardState.name, style = MaterialTheme.typography.subtitle1)
                 Text(text = codeString, style = MaterialTheme.typography.h4)
             }
             Spacer(Modifier.weight(1f))
