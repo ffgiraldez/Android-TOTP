@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,8 +29,8 @@ fun ExportScreen(
     viewModel: ExportViewModel,
     onPopBack: () -> Unit,
 ) {
-    var currentExportChoice by remember { mutableStateOf(0) }
-    var encryptionPassword by remember { mutableStateOf("") }
+    var currentExportChoice by rememberSaveable { mutableStateOf(0) }
+    var encryptionPassword by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 

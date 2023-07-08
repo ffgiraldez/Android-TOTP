@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +26,7 @@ fun ImportScreen(
     onPopBack: () -> Unit,
 ) {
     val state = viewModel.importScreenState
-    var showPasswordDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by rememberSaveable { mutableStateOf(false) }
 
     val scaffoldState = rememberScaffoldState()
     val context = LocalContext.current
@@ -135,7 +136,7 @@ fun AskPasswordDialog(
     onSuccess: (String) -> Unit,
 ) {
     if (!showDialog) return
-    var password by remember { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
     Dialog(onDismissRequest = onDismiss) {
         Card {
             Column {

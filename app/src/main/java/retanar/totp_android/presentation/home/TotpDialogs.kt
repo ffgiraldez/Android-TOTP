@@ -3,6 +3,7 @@ package retanar.totp_android.presentation.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -56,8 +57,8 @@ fun TotpDialog(
 ) {
     if (!showDialog) return
 
-    var nameField by remember { mutableStateOf(name) }
-    var secretField by remember { mutableStateOf(secret) }
+    var nameField by rememberSaveable { mutableStateOf(name) }
+    var secretField by rememberSaveable { mutableStateOf(secret) }
     var secretIsError by remember { mutableStateOf(false) }
 
     Dialog(onDismiss) {

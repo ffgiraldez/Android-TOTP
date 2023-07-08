@@ -6,11 +6,13 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -32,9 +34,9 @@ fun HomeScreen(
     navigateImport: () -> Unit,
 ) {
     val state by viewModel.homeState
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showCopiedSnackbar by remember { mutableStateOf(false) }
-    var showMoreMenu by remember { mutableStateOf(false) }
+    var showMoreMenu by rememberSaveable { mutableStateOf(false) }
     val scaffoldState = rememberScaffoldState()
     val clipboard = LocalClipboardManager.current
 
@@ -94,12 +96,14 @@ fun TotpCardListView(
     onEdit: (id: Int) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
+    val lazyListState = rememberLazyListState()
     LazyColumn(
         Modifier
             .padding(contentPadding)
-            .padding(vertical = 4.dp)
+            .padding(vertical = 4.dp),
+        lazyListState,
     ) {
-        items(items = list) { item ->
+        items(items = list, key = { it.id }) { item ->
             TotpCard(item, onRemove, onCopy, onEdit)
         }
     }
@@ -113,7 +117,7 @@ fun TotpCard(
     onCopy: (code: String) -> Unit,
     onEdit: (id: Int) -> Unit
 ) {
-    var showPopupMenu by remember { mutableStateOf(false) }
+    var showPopupMenu by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
