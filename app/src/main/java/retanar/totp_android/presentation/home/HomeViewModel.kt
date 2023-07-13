@@ -72,6 +72,7 @@ class HomeViewModel @Inject constructor(
         if (currentSecondsLeft == (defaultUpdateStepMs / 1000).toInt()) {
             updateStateList()
         } else {
+            // IllegalStateException: Reading a state that was created after the snapshot was taken or in a snapshot that has not yet been applied
             homeState.value = homeState.value.copy(
                 totpList = homeState.value.totpList.map { it.copy(secondsLeft = currentSecondsLeft) }
             )
@@ -80,13 +81,19 @@ class HomeViewModel @Inject constructor(
 
     private fun updateStateList(keyList: List<EncryptedTotpKey> = totpKeyFlow.value) {
         val list = keyList.map {
+            // Try-catch for the rare circumstance that invalid (empty) secret is in the database
+            val currentTotp = try {
+                generateTotpCodeUseCase(it)
+            } catch (e: IllegalArgumentException) {
+                -999999
+            }
             TotpCardState(
                 it.id,
                 it.name,
-                generateTotpCodeUseCase(it),
+                currentTotp,
                 countSecondsLeft()
             )
-        }.toList()
+        }
         homeState.value = homeState.value.copy(totpList = list)
     }
 
@@ -97,12 +104,18 @@ class HomeViewModel @Inject constructor(
         return ((timeStep - currentTime % timeStep).toDouble() / 1000).roundToInt()
     }
 
-    fun addTotp(name: String, base32Secret: String) {
-        if (base32Secret.isEmpty()) return
+    // Returns false if any problem arises, otherwise true
+    fun addTotp(name: String, base32Secret: String): Boolean {
+        if (!isSecretCorrect(base32Secret)) return false
         val secret = Base32().decode(base32Secret)
-        viewModelScope.launch {
-            addTotpUseCase(secret, name)
+        try {
+            viewModelScope.launch {
+                addTotpUseCase(secret, name)
+            }
+        } catch (e: IllegalArgumentException) {
+            return false
         }
+        return true
     }
 
     fun removeTotpById(id: Int) {
@@ -128,10 +141,15 @@ class HomeViewModel @Inject constructor(
     }
 
     fun editTotp(edited: EditTotpState) {
-        if (edited.base32Secret.isEmpty()) return
+        if (!isSecretCorrect(edited.base32Secret)) return
         val secret = Base32().decode(edited.base32Secret)
         viewModelScope.launch {
             editTotpUseCase(edited.id, edited.name, secret)
         }
+    }
+
+    private val base32Regex = Regex("[A-Za-z2-7]+=*")
+    fun isSecretCorrect(secret: String): Boolean {
+        return base32Regex.matchEntire(secret) != null
     }
 }

@@ -79,8 +79,13 @@ fun HomeScreen(
             contentPadding = it
         )
 
-        AddTotpDialog(showAddDialog, { showAddDialog = false }, viewModel::addTotp)
-        EditTotpDialog(state.editingTotp, { viewModel.requestEdit(-1) }, viewModel::editTotp)
+        AddTotpDialog(showAddDialog, { showAddDialog = false }, viewModel::addTotp, viewModel::isSecretCorrect)
+        EditTotpDialog(
+            state.editingTotp,
+            { viewModel.requestEdit(-1) },
+            viewModel::editTotp,
+            viewModel::isSecretCorrect,
+        )
     }
 
     // Android 13 (API 33) shows system confirmation on copy

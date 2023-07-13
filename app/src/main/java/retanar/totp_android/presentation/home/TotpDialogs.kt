@@ -8,13 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
-val notBase32Regex = Regex("[^A-Za-z2-7=]")
-
 @Composable
 fun AddTotpDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
     onAdd: (name: String, secret: String) -> Unit,
+    validateSecret: (String) -> Boolean,
 ) {
     TotpDialog(
         title = "Add new TOTP",
@@ -22,6 +21,7 @@ fun AddTotpDialog(
         actionText = "ADD",
         onAction = onAdd,
         onDismiss = onDismiss,
+        onValidateSecret = validateSecret,
     )
 }
 
@@ -30,6 +30,7 @@ fun EditTotpDialog(
     totpState: EditTotpState?,
     onDismiss: () -> Unit,
     onEdit: (EditTotpState) -> Unit,
+    onValidateSecret: (String) -> Boolean,
 ) {
     totpState?.let {
         TotpDialog(
@@ -40,6 +41,7 @@ fun EditTotpDialog(
             actionText = "EDIT",
             onAction = { name, secret -> onEdit(totpState.copy(name = name, base32Secret = secret)) },
             onDismiss = onDismiss,
+            onValidateSecret = onValidateSecret,
         )
     }
 }
@@ -54,6 +56,7 @@ fun TotpDialog(
     onAction: (name: String, secret: String) -> Unit,
     dismissText: String = "CANCEL",
     onDismiss: () -> Unit,
+    onValidateSecret: (String) -> Boolean,
 ) {
     if (!showDialog) return
 
@@ -88,13 +91,8 @@ fun TotpDialog(
                 TextField(
                     value = secretField,
                     onValueChange = {
-                        if (it.isEmpty()) {
-                            secretIsError = true
-                            return@TextField
-                        } else {
-                            secretIsError = false
-                        }
-                        secretField = validateBase32(it)
+                        secretIsError = !onValidateSecret(it)
+                        secretField = it
                     },
                     label = { Text("Secret") },
                     singleLine = true,
@@ -117,15 +115,18 @@ fun TotpDialog(
                     TextButton(onClick = onDismiss) {
                         Text(dismissText)
                     }
-                    TextButton(onClick = {
-                        if (secretField.isEmpty()) {
-                            secretIsError = true
-                            return@TextButton
-                        }
-//                        secretIsError = false
-                        onAction(nameField, validateBase32(secretField.uppercase()))
-                        onDismiss()
-                    }) {
+                    TextButton(
+                        enabled = !secretIsError,
+                        onClick = {
+                            if (!onValidateSecret(secretField)) {
+                                secretIsError = true
+                                return@TextButton
+                            }
+                            onAction(nameField, secretField)
+                            onDismiss()
+
+                        },
+                    ) {
                         Text(actionText)
                     }
                 }
@@ -133,5 +134,3 @@ fun TotpDialog(
         }
     }
 }
-
-fun validateBase32(text: String) = text.replace(notBase32Regex, "")
