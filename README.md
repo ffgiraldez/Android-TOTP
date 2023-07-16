@@ -40,14 +40,21 @@ Requirements:
 
 - Java SDK of version 19 or lower in `JAVA_HOME` environment variable - 
 building was tested with Java 17, lower versions may work too.
-- Android SDK in `ANDROID_SDK_ROOT` environment variable and/or in
-`local.properties` file in the root of the project as `sdk.dir=/path/to/sdk`
+- Android SDK in `ANDROID_SDK_ROOT` environment variable.
 - (Optional) `GRADLE_USER_HOME` environment variable defines where to store
 gradle wrapper distributions and some other files. If this variable doesn't
 exist, Gradle will store its data in `<path to user home folder>/.gradle`.
 
 Building from command line is described on developer.android.com website
 [here](https://developer.android.com/build/building-cmdline#build_apk).
+On Windows it can be done by executing:
+```
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease
+.\sign_release.ps1
+```
+When using `sign_release.ps1` script, generated signed apk will be at
+`app/build/outputs/apk/release/app-release-signed.apk`
 
 To build an apk with IntelliJ / Android Studio, open the project and:
 
