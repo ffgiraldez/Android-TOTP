@@ -47,14 +47,16 @@ exist, Gradle will store its data in `<path to user home folder>/.gradle`.
 
 Building from command line is described on developer.android.com website
 [here](https://developer.android.com/build/building-cmdline#build_apk).
-On Windows it can be done by executing:
+
+On Windows signing also can be done by using a script. It requires any version of
+build-tools to be installed in Android SDK, and a single signing key named
+"release-key.jks" in the root. The following commands will build and sign a release
+apk and put it at `app/build/outputs/apk/release/app-release-signed.apk`:
 ```
 .\gradlew.bat clean
 .\gradlew.bat assembleRelease
 .\sign_release.ps1
 ```
-When using `sign_release.ps1` script, generated signed apk will be at
-`app/build/outputs/apk/release/app-release-signed.apk`
 
 To build an apk with IntelliJ / Android Studio, open the project and:
 
