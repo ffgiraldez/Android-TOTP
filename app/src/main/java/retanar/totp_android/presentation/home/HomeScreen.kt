@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retanar.totp_android.R
@@ -137,11 +138,19 @@ fun TotpCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val codeString = totpCardState.oneTimeCode.toString().padStart(6, '0')
-            Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                Text(text = totpCardState.name, style = MaterialTheme.typography.subtitle1)
+            Column(
+                Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = totpCardState.name,
+                    style = MaterialTheme.typography.subtitle1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 Text(text = codeString, style = MaterialTheme.typography.h4)
             }
-            Spacer(Modifier.weight(1f))
             Text(text = totpCardState.secondsLeft.toString())
             IconButton(onClick = { onCopy(codeString) }) {
                 Icon(painterResource(R.drawable.ic_content_copy), "Copy to clipboard")

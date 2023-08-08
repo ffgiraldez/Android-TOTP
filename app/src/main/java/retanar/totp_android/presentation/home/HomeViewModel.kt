@@ -68,6 +68,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun timerUpdates() {
+        if (totpKeyFlow.value.isEmpty()) return
+
         val currentSecondsLeft = countSecondsLeft()
         if (currentSecondsLeft == (defaultUpdateStepMs / 1000).toInt()) {
             updateStateList()
@@ -128,9 +130,7 @@ class HomeViewModel @Inject constructor(
     fun requestEdit(id: Int) {
         val toEdit = totpKeyFlow.value.find { key -> key.id == id }
         homeState.value = homeState.value.copy(
-            editingTotp = if (toEdit == null) {
-                null
-            } else {
+            editingTotp = toEdit?.let {
                 EditTotpState(
                     id, toEdit.name, Base32().encode(
                         secretEncryptor.decrypt(toEdit.secret, toEdit.iv)
