@@ -18,6 +18,12 @@ import retanar.totp_android.presentation.importexport.ImportScreen
 import retanar.totp_android.presentation.importexport.ImportViewModel
 import retanar.totp_android.presentation.theme.TOTPTheme
 
+enum class Routes {
+    Home,
+    Export,
+    Import,
+}
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,21 +33,21 @@ class MainActivity : ComponentActivity() {
             TOTPTheme {
                 Surface(color = MaterialTheme.colors.background) {
                     val navController = rememberNavController()
-                    NavHost(navController, startDestination = "home") {
-                        composable("home") {
+                    NavHost(navController, startDestination = Routes.Home.name) {
+                        composable(Routes.Home.name) {
                             // proper way to create ViewModel with Hilt and Navigation Compose
                             val homeViewModel = hiltViewModel<HomeViewModel>()
                             HomeScreen(
                                 homeViewModel,
-                                navigateExport = { navController.navigate("export") },
-                                navigateImport = { navController.navigate("import") },
+                                navigateExport = { navController.navigate(Routes.Export.name) },
+                                navigateImport = { navController.navigate(Routes.Import.name) },
                             )
                         }
-                        composable("export") {
+                        composable(Routes.Export.name) {
                             val exportViewModel = hiltViewModel<ExportViewModel>()
                             ExportScreen(exportViewModel, onPopBack = { navController.popBackStack() })
                         }
-                        composable("import") {
+                        composable(Routes.Import.name) {
                             val importViewModel = hiltViewModel<ImportViewModel>()
                             ImportScreen(importViewModel, onPopBack = { navController.popBackStack() })
                         }

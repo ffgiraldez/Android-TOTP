@@ -41,4 +41,8 @@ class AndroidKeyStoreRepository : SecretKeyRepository {
     override fun getAliases(): List<String> {
         return keyStore.aliases().toList()
     }
+
+    companion object {
+        const val TOTP_KEY_ALIAS = "totp_key"
+    }
 }

@@ -24,7 +24,8 @@ object CryptoModule {
 
     @Provides
     fun provideAesSecretEncryptor(keyRepository: SecretKeyRepository): SecretEncryptor {
-        val key = keyRepository.getKey("totp_key") ?: keyRepository.generateRandomKey("totp_key")
+        val key = keyRepository.getKey(AndroidKeyStoreRepository.TOTP_KEY_ALIAS)
+            ?: keyRepository.generateRandomKey(AndroidKeyStoreRepository.TOTP_KEY_ALIAS)
         return AesGcmSecretEncryptor(key)
     }
 

@@ -21,7 +21,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context.applicationContext,
             TotpDatabase::class.java,
-            "totp_database"
+            TotpDatabase.DATABASE_NAME
         ).build()
     }
 
